@@ -1,0 +1,52 @@
+# Keeps the casks in step with moderniselife/prism releases. It reads the
+# latest public release, renders the cask templates from prism's main branch
+# (packaging/homebrew-cask) with that version and its checksums, and commits
+# if anything changed. Runs hourly and on demand, using only this repo's own
+# GITHUB_TOKEN, so the prism release workflow needs no tap secret.
+name: Sync casks
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render casks from the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SRC=moderniselife/prism
+          TAG=$(gh release view --repo "$SRC" --json tagName -q .tagName)
+          VER="${TAG#v}"
+          echo "Latest release: $TAG"
+          work=$(mktemp -d)
+          gh release download "$TAG" --repo "$SRC" -p checksums.txt -p Prism.app.zip -D "$work"
+          SHA_APP=$(sha256sum "$work/Prism.app.zip" | cut -d' ' -f1)
+          SHA_ARM=$(grep ' prism-tui-darwin-arm64.tar.gz$' "$work/checksums.txt" | cut -d' ' -f1)
+          SHA_INTEL=$(grep ' prism-tui-darwin-amd64.tar.gz$' "$work/checksums.txt" | cut -d' ' -f1)
+          for v in SHA_APP SHA_ARM SHA_INTEL; do
+            [ -n "${!v}" ] || { echo "missing $v"; exit 1; }
+          done
+          tmpl() { gh api -H "Accept: application/vnd.github.raw" "repos/$SRC/contents/packaging/homebrew-cask/$1?ref=main"; }
+          mkdir -p Casks
+          tmpl prism.rb | sed -e "s/__VERSION__/$VER/" -e "s/__SHA256__/$SHA_APP/" > Casks/prism.rb
+          tmpl prism-tui.rb | sed -e "s/__VERSION__/$VER/" -e "s/__SHA_ARM__/$SHA_ARM/" -e "s/__SHA_INTEL__/$SHA_INTEL/" > Casks/prism-tui.rb
+          if grep -q '__[A-Z_]*__' Casks/*.rb; then echo "unfilled placeholder"; exit 1; fi
+          git add Casks
+          if git diff --cached --quiet; then echo "Casks already up to date"; exit 0; fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Prism $VER"
+          git push
