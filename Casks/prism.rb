@@ -5,7 +5,7 @@ cask "prism" do
   url "https://github.com/moderniselife/prism/releases/download/v#{version}/Prism.app.zip"
   name "Prism"
   desc "Run every AI app and account side by side in isolated profiles"
-  homepage "https://prism.mojolayers.com"
+  homepage "https://prism.mojolayers.com/"
 
   livecheck do
     url :url
@@ -13,15 +13,14 @@ cask "prism" do
   end
 
   auto_updates true
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "Prism.app"
 
-  postflight do
-    # Prism is ad-hoc signed, not notarised: clear quarantine so
-    # Gatekeeper doesn't block the first launch.
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/Prism.app"]
+  # Prism is ad-hoc signed, not notarised: clear quarantine so
+  # Gatekeeper doesn't block the first launch.
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{appdir}/Prism.app"]
   end
 
   zap trash: [
