@@ -15,7 +15,8 @@ cask "prism-tui" do
 
   # The binary is unsigned: clear quarantine so Gatekeeper
   # doesn't block the first run.
-  postflight_steps do
-    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/prism-tui"]
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-dr", "com.apple.quarantine", "#{staged_path}/prism-tui"]
   end
 end

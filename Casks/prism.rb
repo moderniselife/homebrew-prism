@@ -19,8 +19,9 @@ cask "prism" do
 
   # Prism is ad-hoc signed, not notarised: clear quarantine so
   # Gatekeeper doesn't block the first launch.
-  postflight_steps do
-    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{appdir}/Prism.app"]
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-dr", "com.apple.quarantine", "#{appdir}/Prism.app"]
   end
 
   zap trash: [
