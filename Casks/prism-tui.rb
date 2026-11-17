@@ -1,9 +1,9 @@
 cask "prism-tui" do
   arch arm: "arm64", intel: "amd64"
 
-  version "1.5.0"
-  sha256 arm:   "de8eeb8859a990c4bb8f7f6b095154309c94fa494163d6553c54d8af83ac3df3",
-         intel: "7750e3ef0f24551f3a3548962038322b26f3524a059299887eded36215fce6dd"
+  version "1.5.1"
+  sha256 arm:   "1b990091046a3ed6e8d037863bb7fe3a4db8d45f37122529d2f8853a16732958",
+         intel: "3205089f5e1d33b1d51866693fd0ab4d097b171c9321dec5c1dc7ee2842ebfaa"
   url "https://github.com/moderniselife/prism/releases/download/v#{version}/prism-tui-darwin-#{arch}.tar.gz"
 
   name "Prism TUI"
