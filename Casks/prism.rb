@@ -1,6 +1,6 @@
 cask "prism" do
-  version "1.5.1"
-  sha256 "0e64f46732ac352d28b714978753bd8340b37b16e777a63cc4976f0dd176bb77"
+  version "1.6.0"
+  sha256 "9350c28a706a02db6b0d42fad49304cf9490e036a6f527d858ecf7d4c045d26d"
 
   url "https://github.com/moderniselife/prism/releases/download/v#{version}/Prism.app.zip"
   name "Prism"
